@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherNow | Live Weather Updates</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-cloud-sun"></i>
+                <h1>WeatherNow</h1>
+            </div>
+            <div class="theme-toggle">
+                <button id="theme-toggle-btn">
+                    <i class="fas fa-moon" id="theme-icon"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Search for a city...">
+                <button id="search-btn"><i class="fas fa-search"></i></button>
+                <button id="location-btn" title="Use current location"><i class="fas fa-location-dot"></i></button>
+            </div>
+            <div class="unit-toggle">
+                <button id="celsius" class="active">°C</button>
+                <button id="fahrenheit">°F</button>
+            </div>
+        </div>
+
+        <div class="loader" id="loader">
+            <div class="spinner"></div>
+        </div>
+
+        <div class="error-container" id="error-container">
+            <p id="error-message">Location not found. Please try again.</p>
+        </div>
+
+        <div class="tabs-container">
+            <button class="tab-btn active" data-tab="current">Current</button>
+            <button class="tab-btn" data-tab="history">History</button>
+            <button class="tab-btn" data-tab="map">Map</button>
+        </div>
+
+        <div class="tab-content" id="current-tab">
+            <div class="weather-container" id="weather-container">
+                <div class="current-weather">
+                    <div class="weather-header">
+                        <div>
+                            <h1 id="city">New York</h1>
+                            <p id="date-time">Monday, 10:30 AM</p>
+                        </div>
+                        <div class="weather-icon-large" id="weather-icon-large">
+                            <i class="fas fa-sun"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="temperature-container">
+                        <h2 id="temperature">25°</h2>
+                        <p id="feels-like">Feels like: 27°</p>
+                        <p id="weather-description">Sunny</p>
+                    </div>
+
+                    <div class="weather-details">
+                        <div class="detail-item">
+                            <i class="fas fa-wind"></i>
+                            <div>
+                                <p class="detail-label">Wind</p>
+                                <p id="wind-speed">5 km/h</p>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-droplet"></i>
+                            <div>
+                                <p class="detail-label">Humidity</p>
+                                <p id="humidity">45%</p>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-eye"></i>
+                            <div>
+                                <p class="detail-label">Visibility</p>
+                                <p id="visibility">10 km</p>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-gauge-high"></i>
+                            <div>
+                                <p class="detail-label">Pressure</p>
+                                <p id="pressure">1015 hPa</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="air-quality-container">
+                    <h3>Air Quality Index</h3>
+                    <div class="aqi-meter">
+                        <div class="aqi-indicator" id="aqi-indicator"></div>
+                        <div class="aqi-labels">
+                            <span>Good</span>
+                            <span>Moderate</span>
+                            <span>Poor</span>
+                            <span>Very Poor</span>
+                        </div>
+                    </div>
+                    <p id="aqi-description">Good air quality</p>
+                </div>
+
+                <div class="hourly-forecast">
+                    <h3>Hourly Forecast</h3>
+                    <div class="hourly-container" id="hourly-container">
+                        <!-- Hourly forecast items will be inserted here by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="forecast-container">
+                    <h3>5-Day Forecast</h3>
+                    <div class="forecast-cards" id="forecast-cards">
+                        <!-- Forecast cards will be inserted here by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="weather-alerts" id="weather-alerts">
+                    <h3>Weather Alerts</h3>
+                    <div id="alerts-container">
+                        <!-- Weather alerts will be inserted here by JavaScript -->
+                        <p class="no-alerts">No active weather alerts for this location.</p>
+                    </div>
+                </div>
+
+                <div class="sunrise-sunset">
+                    <h3>Sunrise & Sunset</h3>
+                    <div class="sun-container">
+                        <div class="sun-info">
+                            <i class="fas fa-sun"></i>
+                            <div>
+                                <p>Sunrise</p>
+                                <p id="sunrise-time">06:45 AM</p>
+                            </div>
+                        </div>
+                        <div class="sun-arc">
+                            <div class="sun-position" id="sun-position"></div>
+                        </div>
+                        <div class="sun-info">
+                            <i class="fas fa-moon"></i>
+                            <div>
+                                <p>Sunset</p>
+                                <p id="sunset-time">07:30 PM</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="history-tab" style="display: none;">
+            <div class="history-container">
+                <div class="history-header">
+                    <h2>Weather History</h2>
+                    <div class="history-controls">
+                        <select id="history-period">
+                            <option value="7">Last 7 days</option>
+                            <option value="14">Last 14 days</option>
+                            <option value="30">Last 30 days</option>
+                        </select>
+                        <button id="refresh-history"><i class="fas fa-sync-alt"></i></button>
+                        <button id="clear-history" title="Clear History"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                </div>
+                
+                <div class="history-chart-container">
+                    <canvas id="temperature-chart"></canvas>
+                </div>
+                
+                <div class="history-stats">
+                    <div class="stat-card">
+                        <h4>Average Temperature</h4>
+                        <p id="avg-temp">--°</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Max Temperature</h4>
+                        <p id="max-temp">--°</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Min Temperature</h4>
+                        <p id="min-temp">--°</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Avg Humidity</h4>
+                        <p id="avg-humidity">--%</p>
+                    </div>
+                </div>
+                
+                <div class="history-table-container">
+                    <h3>Daily Records</h3>
+                    <div class="table-wrapper">
+                        <table id="history-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Temp</th>
+                                    <th>Humidity</th>
+                                    <th>Conditions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body">
+                                <!-- History data will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="map-tab" style="display: none;">
+            <div class="map-container">
+                <h2>Weather Map</h2>
+                <div class="map-options">
+                    <button class="map-option active" data-layer="temp">Temperature</button>
+                    <button class="map-option" data-layer="clouds">Clouds</button>
+                    <button class="map-option" data-layer="precipitation">Precipitation</button>
+                    <button class="map-option" data-layer="wind">Wind</button>
+                </div>
+                <div id="weather-map">
+                    <div class="map-placeholder">
+                        <i class="fas fa-map-marked-alt"></i>
+                        <p>Interactive weather map showing <span id="current-layer">temperature</span> data</p>
+                    </div>
+                </div>
+                <div class="map-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #4361ee;"></div>
+                        <span>Low</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #3a0ca3;"></div>
+                        <span>Medium</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #7209b7;"></div>
+                        <span>High</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="recently-searched">
+            <h3>Recently Searched</h3>
+            <div class="recent-locations" id="recent-locations">
+                <!-- Recent locations will be inserted here -->
+            </div>
+        </div>
+
+        <footer>
+            <p>Created with <i class="fas fa-heart"></i> By Rushikesh Joshi </p>
+            <div class="social-links">
+                <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+                <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+            </div>
+        </footer>
+    </div>
+
+<!-- External Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+<!-- Load config BEFORE script.js -->
+<script src="config.js"></script>
+<script src="script.js" defer></script>
